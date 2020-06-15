@@ -5,7 +5,7 @@ import { PlaylistsResponse } from './types/spotify-playlists';
 import { RecentResponse } from './types/spotify-recent';
 import { TokenResponse } from './types/spotify-token';
 import { Artist, TopArtistsResponse } from './types/spotify-top-artists';
-import { TopTracksResponse, Track } from './types/spotify-top-tracks';
+import { TopTracksResponse, Track, Album } from './types/spotify-top-tracks';
 
 export type Scope =
   | 'playlist-read-private'
@@ -35,13 +35,14 @@ export const REDIRECT_URL = 'http://localhost:5071/spotify';
 
 export const generateAuthUrl = (
   clientId: string,
-  scopes: Scope[] = ['user-top-read', 'user-read-recently-played'],
+  scopes: Scope[] = ['user-top-read', 'user-read-recently-played', `user-read-private`, `user-library-read`],
 ) => {
   const base = new URL(`${SPOTIFY_ACCOUNT_URL}/authorize`);
   base.searchParams.append('response_type', 'code');
   base.searchParams.append('redirect_uri', REDIRECT_URL);
   base.searchParams.append('client_id', clientId);
   base.searchParams.append('scope', scopes.join(' '));
+  console.log(String(base));
   return String(base);
 };
 
@@ -138,6 +139,28 @@ export const getRecentTracks = async (
   return result.items;
 };
 
+export const getSavedAlbums = async (
+  accessToken: string,
+  limit: number = 50,
+  next: string = `${SPOTIFY_API_URL}/me/albums?limit=50`,
+  ) => {
+   
+  const url = new URL(next);
+  const response = await fetch(String(url), {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok){
+    throw new Error(`${response.statusText}: ${await response.text()}`)
+  }
+
+  const result: RecentResponse = await response.json();
+  console.log
+  return result;
+};
+
 export const getUserData = async ({
   clientId,
   clientSecret,
@@ -154,7 +177,19 @@ export const getUserData = async ({
   );
 
   const playlists = fetchPlaylists ? await getPlaylists(access_token) : [];
-  const recentTracks = fetchRecent ? await getRecentTracks(access_token) : [];
+  const recentTracks = fetchRecent ? await getRecentTracks(access_token) : []; 
+  
+  let savedAlbums = []
+  let albums = await getSavedAlbums(access_token);
+  savedAlbums = savedAlbums.concat(...albums.items)
+  while (!(albums.next == null)){
+    let next = albums.next
+    console.log(next)
+    albums = await getSavedAlbums(access_token,undefined,next);
+    savedAlbums = savedAlbums.concat(...albums.items)
+  }
+  
+
 
   const artists = await Promise.all(
     timeRanges.map(async t => {
@@ -173,6 +208,7 @@ export const getUserData = async ({
   return {
     playlists,
     recentTracks,
+    savedAlbums,
     artists: [].concat(...artists) as (Artist & { time_range: TimeRange })[],
     tracks: [].concat(...tracks) as (Track & { time_range: TimeRange })[],
   };

@@ -1,3 +1,6 @@
+exports.onPreInit = () => {
+  console.log("logging to the console from local plugins's gatsby-node")
+}
 import { createFileNodeFromBuffer } from 'gatsby-source-filesystem';
 import fetch from 'node-fetch';
 
@@ -7,6 +10,7 @@ import {
   RecentTrackNode,
   TopArtistNode,
   TopTrackNode,
+  SavedAlbumNode
 } from './nodes';
 import { getUserData, TimeRange } from './spotify-api';
 
@@ -66,7 +70,7 @@ export const sourceNodes = async (
   const { createNode, touchNode } = actions;
   const helpers = { cache, createNode, createNodeId, store, touchNode };
 
-  const { tracks, artists, playlists, recentTracks } = await getUserData(
+  const { tracks, artists, playlists, recentTracks, savedAlbums} = await getUserData(
     pluginOptions,
   );
 
@@ -106,6 +110,7 @@ export const sourceNodes = async (
         }),
       );
     }),
+
     ...playlists.map(async (playlist, index) => {
       createNode(
         PlaylistNode({
@@ -122,6 +127,18 @@ export const sourceNodes = async (
         }),
       );
     }),
+
+    ...savedAlbums.map(async (album, index) => {
+      createNode(
+        SavedAlbumNode({
+          ...album,
+          id: index,
+          order: index,
+        }),
+      );
+
+    }),
+
     ...recentTracks.map(async (track, index) => {
       createNode(
         RecentTrackNode({

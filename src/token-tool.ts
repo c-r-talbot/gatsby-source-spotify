@@ -47,7 +47,7 @@ program
       'I will open a browser window for you.',
       'Please log in using your Spotify credentials.',
     );
-    console.log();
+    console.log(String(authUrl))
     console.log("In case your browser doesn't open, here's the link:", authUrl);
 
     try {
