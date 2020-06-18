@@ -1,4 +1,7 @@
-# gatsby-source-spotify
+# son of gatsby-source-spotify
+
+## Changes in this branch:
+Adds functionality to retrieve saved albums. Also currently tracking compiled JS files in github for netlify deploy rather than creating a yarn package.
 
 [![npm](https://img.shields.io/npm/v/gatsby-source-spotify.svg)](https://www.npmjs.com/package/gatsby-source-spotify) [![Build Status](https://travis-ci.org/leolabs/gatsby-source-spotify.svg?branch=master)](https://travis-ci.org/leolabs/gatsby-source-spotify)
 
