@@ -1,6 +1,4 @@
 /types/
-/*.js
-/*.d.ts
 yarn-error.log
 node_modules/
 lib/
